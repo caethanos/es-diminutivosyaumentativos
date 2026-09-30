@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Spanish Diminutivos & Aumentativos</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --safe-top: env(safe-area-inset-top);
+      --safe-right: env(safe-area-inset-right);
+      --safe-bottom: env(safe-area-inset-bottom);
+      --safe-left: env(safe-area-inset-left);
+    }
+    html, body { min-height: 100%; background:#020617; }
+    body {
+      padding:max(0px,var(--safe-top)) max(0px,var(--safe-right))
+              max(0px,var(--safe-bottom)) max(0px,var(--safe-left));
+      font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    }
+    button,input { -webkit-tap-highlight-color:transparent; }
+    .glass {
+      background:rgba(15,23,42,.82);
+      border:1px solid rgba(148,163,184,.16);
+      box-shadow:0 20px 50px rgba(0,0,0,.22);
+      backdrop-filter:blur(14px);
+    }
+    .study-card { transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease; cursor:pointer; }
+    .study-card:hover { transform:translateY(-2px); border-color:rgba(96,165,250,.55); }
+    .study-card:active { transform:scale(.985); }
+    .option { transition:all .18s ease; }
+    .option:not(:disabled):hover { transform:translateY(-2px); border-color:rgba(96,165,250,.6); }
+    .correct { background:rgba(22,101,52,.55)!important;border-color:rgb(74,222,128)!important;color:#dcfce7!important; }
+    .wrong { background:rgba(127,29,29,.58)!important;border-color:rgb(248,113,113)!important;color:#fee2e2!important; }
+    .muted-option { opacity:.38; filter:saturate(.25); }
+    .suffix { color:#67e8f9; font-weight:900; }
+    .xp-pop { animation:pop .4s ease-out; }
+    @keyframes pop { 0%{transform:scale(.7);opacity:.2} 60%{transform:scale(1.12);opacity:1} 100%{transform:scale(1);opacity:1} }
+    .fade { animation:fade .22s ease-out; }
+    @keyframes fade { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+    .progress-bar { transition:width .35s ease; }
+    input:focus { outline:none;box-shadow:0 0 0 3px rgba(34,211,238,.18);border-color:rgb(34,211,238)!important; }
+  </style>
+</head>
+<body class="text-slate-100">
+<div id="app" class="min-h-screen"></div>
+
+<script>
+"use strict";
+
+const W = [
+{r:1,b:"casa",t:"casa",a:"casita",e:"casinha",d:["casaito","casecita"]},
+{r:1,b:"perro",t:"cachorro",a:"perrito",e:"cachorrinho",d:["perroito","perrecito"]},
+{r:1,b:"gato",t:"gato",a:"gatito",e:"gatinho",d:["gatoito","gatecito"]},
+{r:1,b:"niña",t:"menina",a:"niñita",e:"menininha",d:["ninita","niñacita"]},
+{r:1,b:"mesa",t:"mesa",a:"mesita",e:"mesinha",d:["mesaita","mesecita"]},
+{r:1,b:"amigo",t:"amigo",a:"amiguito",e:"amiguinho",d:["amigito","amigocito"]},
+{r:1,b:"chico",t:"garoto",a:"chiquito",e:"garotinho",d:["chicito","chicocito"]},
+{r:2,b:"pan",t:"pão",a:"panecito",e:"pãozinho",d:["pancito","panito"]},
+{r:2,b:"sol",t:"sol",a:"solecito",e:"solzinho",d:["solcito","solito"]},
+{r:2,b:"flor",t:"flor",a:"florecita",e:"florzinha",d:["florcita","florita"]},
+{r:2,b:"amor",t:"amor",a:"amorcito",e:"amorzinho",d:["amorecito","amorito"]},
+{r:2,b:"camión",t:"caminhão",a:"camioncito",e:"caminhãozinho",d:["camionecito","camionito"]},
+{r:2,b:"café",t:"café",a:"cafecito",e:"cafezinho",d:["cafito","cafetito"]},
+{r:2,b:"madre",t:"mãe",a:"madrecita",e:"mãezinha",d:["madrita","madrecito"]},
+{r:3,b:"casa",t:"casa",a:"casona",e:"casarão",d:["casón","casaza"],x:1},
+{r:3,b:"silla",t:"cadeira",a:"sillón",e:"poltrona",d:["sillona","sillaza"]},
+{r:3,b:"hombre",t:"homem",a:"hombrón",e:"homenzarrão",d:["hombreón","hombrona"],alt:["hombrazo"]},
+{r:3,b:"mujer",t:"mulher",a:"mujerona",e:"mulherona",d:["mujerón","mujeraza"]},
+{r:3,b:"soltero",t:"solteiro",a:"solterón",e:"solteirão",d:["solteroón","solterote"]},
+{r:3,b:"botella",t:"garrafa",a:"botellón",e:"garrafão",d:["botelleón","botellaza"]},
+{r:3,b:"cuchara",t:"colher",a:"cucharón",e:"concha",d:["cucharaón","cucharota"]},
+{r:4,b:"perro",t:"cachorro",a:"perrazo",e:"cachorrão",d:["perroazo","perrozo"],x:1},
+{r:4,b:"carro",t:"carro",a:"carrazo",e:"carrão",d:["carroazo","carrozo"]},
+{r:4,b:"ojo",t:"olho",a:"ojazo",e:"olhão",d:["ojoazo","ojozo"]},
+{r:4,b:"cuerpo",t:"corpo",a:"cuerpazo",e:"corpaço",d:["cuerpoazo","cuerpozo"]},
+{r:4,b:"gato",t:"gato",a:"gatazo",e:"gatão",d:["gatoazo","gatozo"],x:1},
+{r:4,b:"amigo",t:"amigo",a:"amigazo",e:"amigão",d:["amigoazo","amigozo"],x:1},
+{r:4,b:"jefe",t:"chefe",a:"jefazo",e:"chefão",d:["jefeazo","jefezo"]},
+{r:5,b:"grande",t:"grande",a:"grandote",e:"grandão",d:["grandeote","grandón"]},
+{r:5,b:"muchacho",t:"rapaz",a:"muchachote",e:"rapagão",d:["muchachoote","muchachón"]}
+];
+
+const RULES = {
+1:{suf:"-ito/-ita",pt:"Palavras em -o/-a átonas: tire a vogal final e some -ito/-ita. Mudanças g→gu e c→qu para manter o som.",es:"Palabras terminadas en -o/-a átonas: elimina la vocal final y añade -ito/-ita. Cambios g→gu y c→qu para mantener el sonido.",examples:["casa → casita","perro → perrito","chico → chiquito"]},
+2:{suf:"-cito/-ecito",pt:"Monossílabos: -ecito/-ecita. Palavras de 2+ sílabas em -n, -r, -e ou vogal tônica: -cito/-cita.",es:"Monosílabos: -ecito/-ecita. Palabras de 2+ sílabas terminadas en -n, -r, -e o vocal tónica: -cito/-cita.",examples:["pan → panecito","flor → florecita","café → cafecito"]},
+3:{suf:"-ón/-ona",pt:"Some -ón (geralmente masculino) ou -ona (feminino) à raiz, tirando a vogal final.",es:"Añade -ón (generalmente masculino) u -ona (femenino) a la raíz, eliminando la vocal final.",examples:["silla → sillón","mujer → mujerona","botella → botellón"]},
+4:{suf:"-azo/-aza",pt:"Tire a vogal final e some -azo/-aza. Também pode expressar admiração ou golpe.",es:"Elimina la vocal final y añade -azo/-aza. También puede expresar admiración o golpe.",examples:["carro → carrazo","ojo → ojazo","jefe → jefazo"]},
+5:{suf:"-ote/-ota",pt:"Tire a vogal final e some -ote/-ota, com matiz de tamanho ou rudeza.",es:"Elimina la vocal final y añade -ote/-ota, con matiz de tamaño o rudeza.",examples:["grande → grandote","muchacho → muchachote"]}
+};
+
+const T = {
+pt:{title:"Diminutivos & Aumentativos",subtitle:"Aprenda espanhol jogando",restart:"Reiniciar",question:"Questão",rule:"Regra",word:"palavra",final:"Fase final",study:"Cartão de estudo",tap:"Toque para revelar",answer:"Resposta",ruleLabel:"Regra",continue:"Continuar",multiple:"Qual é a forma correta?",written:"Agora escreva a resposta",type:"Digite a palavra aqui...",confirm:"Confirmar",correct:"Correto!",wrong:"Não foi dessa vez.",accent:"Você acertou a palavra! Apenas o acento/til estava diferente. A forma correta é:",answerWas:"A resposta correta é:",remember:"Lembre-se",correctOption:"Resposta correta",finalTitle:"Desafio final",finalDesc:"Agora sem dicas. Escolha e escreva as formas que você aprendeu.",finish:"Você terminou!",writtenCorrect:"Palavras escritas corretamente",wrongWords:"Palavras erradas",noErrors:"Nenhuma palavra ficou na lista de erros.",goal:"Meta: acertar as 50, independentemente do número de tentativas.",restartMsg:"Reinicie e tente novamente.",congratulations:"Parabéns! Você acertou as 50 palavras na etapa de escrita!",xp:"XP",base:"Base",equivalent:"≈",inputHint:"Pressione Enter para confirmar.",phase:"Fase final",wordOf:"palavra"},
+es:{title:"Diminutivos y Aumentativos",subtitle:"Aprende español jugando",restart:"Reiniciar",question:"Pregunta",rule:"Regla",word:"palabra",final:"Fase final",study:"Tarjeta de estudio",tap:"Toca para revelar",answer:"Respuesta",ruleLabel:"Regla",continue:"Continuar",multiple:"¿Cuál es la forma correcta?",written:"Ahora escribe la respuesta",type:"Escribe la palabra aquí...",confirm:"Confirmar",correct:"¡Correcto!",wrong:"No fue esta vez.",accent:"¡Acertaste la palabra! Solo faltaba el acento/tilde. La forma correcta es:",answerWas:"La respuesta correcta es:",remember:"Recuerda",correctOption:"Respuesta correcta",finalTitle:"Desafío final",finalDesc:"Ahora sin pistas. Elige y escribe las formas que aprendiste.",finish:"¡Terminaste!",writtenCorrect:"Palabras escritas correctamente",wrongWords:"Palabras incorrectas",noErrors:"No hay palabras en la lista de errores.",goal:"Meta: acertar las 50, independientemente del número de intentos.",restartMsg:"Reinicia e inténtalo de nuevo.",congratulations:"¡Felicidades! ¡Acertaste las 50 palabras en la etapa de escritura!",xp:"XP",base:"Base",equivalent:"≈",inputHint:"Presiona Enter para confirmar.",phase:"Fase final",wordOf:"palabra"}
+};
+
+let S={};
+
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function getLang(){return T[S.lang]}
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;")}
+function fold(s){return String(s).replace(/ñ/g,"\u0001").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/\u0001/g,"ñ")}
+function norm(s){return String(s).trim().toLowerCase()}
+function exact(a,b){return norm(a)===norm(b)}
+function accentOnly(a,b){return fold(norm(a))===fold(norm(b))&&!exact(a,b)}
+function ruleFor(q){if(q<=6)return 1;if(q<=13)return 2;if(q<=20)return 3;if(q<=27)return 4;return 5}
+function wordPosition(q){if(q<7)return q+1;if(q<14)return q-6;if(q<21)return q-13;if(q<28)return q-20;if(q<30)return q-27;return q-29}
+function currentWord(){return S.q<30?W[S.q]:S.finalSet[S.q-30]}
+function addXP(n){S.xp+=n}
+
+function init(){
+  S={lang:"pt",q:0,xp:0,stage:1,revealed:false,studyXP:false,options:[],selected:null,optionDone:false,writingDone:false,writingResult:null,writtenCorrect:0,errors:[],finalSet:[],finished:false};
+  S.finalSet=shuffle(W.filter(w=>!w.x)).slice(0,20);
+  buildQuestion(); render();
+}
+
+function buildQuestion(){
+  S.stage=S.q<30?1:2;
+  S.revealed=false;S.studyXP=false;S.options=[];S.selected=null;S.optionDone=false;S.writingDone=false;S.writingResult=null;
+  const w=currentWord(); if(w)S.options=shuffle([w.a,...w.d]);
+}
+
+function reveal(){if(S.revealed)return;S.revealed=true;if(!S.studyXP){S.studyXP=true;addXP(10)}render()}
+function pickOpt(i){
+  if(S.optionDone)return;
+  S.selected=i;S.optionDone=true;
+  const w=currentWord();
+  if(S.options[i]===w.a||(w.alt&&w.alt.includes(S.options[i])))addXP(50);
+  render();
+}
+function check(){
+  if(S.writingDone)return;
+  const input=document.getElementById("answerInput");if(!input||!input.value.trim())return;
+  const w=currentWord(), value=input.value, accepted=[w.a,...(w.alt||[])];
+  const ok=accepted.some(a=>exact(value,a)), acc=!ok&&accepted.some(a=>accentOnly(value,a));
+  S.writingDone=true;
+  if(ok||acc){addXP(100);S.writtenCorrect++;S.writingResult=acc?"accent":"correct"}
+  else{
+    S.writingResult="wrong";
+    if(!S.errors.some(e=>e.q===S.q))S.errors.push({q:S.q,base:w.b,translation:w.t,answer:w.a,equivalent:w.e});
+  }
+  render();
+}
+function nextStage(){
+  if(S.stage===1){S.stage=2;render()}
+  else if(S.stage===2){S.stage=3;render();setTimeout(()=>document.getElementById("answerInput")?.focus(),20)}
+}
+function next(){
+  if(S.q>=49){S.q=50;S.finished=true;render();return}
+  S.q++;buildQuestion();render();
+}
+function setLang(lang){S.lang=lang;render();setTimeout(()=>document.getElementById("answerInput")?.focus(),20)}
+
+function header(){
+  const L=getLang(),percent=Math.round((S.q/50)*100);
+  return `<header class="sticky top-0 z-30 border-b border-slate-800/80 bg-slate-950/90 backdrop-blur-xl">
+  <div class="mx-auto max-w-4xl px-4 py-3">
+  <div class="flex items-center justify-between gap-3">
+  <div class="min-w-0"><h1 class="truncate text-lg font-black text-cyan-300 sm:text-xl">${L.title}</h1><p class="hidden text-xs text-slate-400 sm:block">${L.subtitle}</p></div>
+  <div class="flex shrink-0 items-center gap-2">
+  <div class="flex overflow-hidden rounded-xl border border-slate-700 bg-slate-900">
+  <button onclick="setLang('es')" class="min-h-10 px-3 text-sm font-bold ${S.lang==="es"?"bg-cyan-500 text-slate-950":"text-slate-300"}">ES</button>
+  <button onclick="setLang('pt')" class="min-h-10 px-3 text-sm font-bold ${S.lang==="pt"?"bg-cyan-500 text-slate-950":"text-slate-300"}">PT</button></div>
+  <button onclick="init()" class="min-h-10 rounded-xl border border-slate-700 bg-slate-900 px-3 text-sm font-bold text-slate-200 hover:bg-slate-800">${L.restart}</button>
+  </div></div>
+  <div class="mt-3 flex items-center gap-3"><div class="h-2 flex-1 overflow-hidden rounded-full bg-slate-800"><div class="progress-bar h-full rounded-full bg-cyan-400" style="width:${percent}%"></div></div><div class="shrink-0 rounded-lg bg-slate-800 px-2.5 py-1 text-sm font-black text-cyan-300">${S.xp} ${L.xp}</div></div>
+  </div></header>`;
+}
+
+function counter(){
+  const L=getLang();
+  if(S.q>=30)return `<div class="mb-4 flex flex-wrap items-center gap-2 text-sm font-semibold text-slate-400"><span>${L.question} ${S.q+1}/50</span><span>·</span><span>${L.final}</span><span>·</span><span>${L.wordOf} ${S.q-29}/20</span></div>`;
+  const r=ruleFor(S.q);
+  return `<div class="mb-4 flex flex-wrap items-center gap-2 text-sm font-semibold text-slate-400"><span>${L.question} ${S.q+1}/50</span><span>·</span><span>${L.rule} ${r}/5</span><span>·</span><span>${L.wordOf} ${wordPosition(S.q)}/${r===5?2:7}</span></div>`;
+}
+
+function ruleBox(){
+  if(S.q>=30)return "";
+  const L=getLang(),r=ruleFor(S.q),R=RULES[r];
+  return `<section class="mb-5 rounded-2xl border border-cyan-900/50 bg-cyan-950/20 p-4 sm:p-5">
+  <div class="flex flex-wrap items-center gap-2"><span class="rounded-lg bg-cyan-400/10 px-2 py-1 text-xs font-black uppercase tracking-wider text-cyan-300">${L.rule} ${r}</span><span class="suffix text-xl sm:text-2xl">${R.suf}</span></div>
+  <p class="mt-3 text-sm leading-6 text-slate-200">${R[S.lang]}</p>
+  <div class="mt-3 flex flex-wrap gap-2">${R.examples.map(e=>`<span class="rounded-lg border border-slate-700 bg-slate-900/80 px-3 py-1.5 text-xs font-semibold text-slate-300">${esc(e)}</span>`).join("")}</div>
+  </section>`;
+}
+
+function studyStage(){
+  const L=getLang(),w=currentWord();
+  return `<section class="fade"><div class="mb-3 text-xs font-black uppercase tracking-widest text-cyan-400">${L.study} · +10 XP</div>
+  <div class="study-card glass rounded-3xl p-7 text-center sm:p-10" onclick="reveal()" role="button" tabindex="0">
+  <div class="text-xs font-bold uppercase tracking-widest text-slate-500">${L.base}</div>
+  <div class="mt-4 text-4xl font-black tracking-tight text-white sm:text-6xl">${esc(w.b)}</div>
+  ${S.lang==="pt"?`<div class="mt-2 text-base text-slate-400">${esc(w.t)}</div>`:""}
+  ${S.revealed?`<div class="mt-8 border-t border-slate-700 pt-7"><div class="text-xs font-bold uppercase tracking-widest text-slate-500">${L.answer}</div>
+  <div class="mt-2 text-3xl font-black text-cyan-300 sm:text-5xl">${esc(w.a)}</div>
+  ${S.lang==="pt"?`<div class="mt-2 text-slate-400">${L.equivalent} ${esc(w.e)}</div>`:""}
+  <div class="mt-6 rounded-2xl border border-cyan-900/50 bg-cyan-950/20 p-4 text-left"><div class="text-xs font-black uppercase tracking-widest text-cyan-400">${L.ruleLabel}</div><div class="mt-2 font-bold text-cyan-200">${RULES[ruleFor(S.q)].suf}</div><p class="mt-2 text-sm leading-6 text-slate-300">${RULES[ruleFor(S.q)][S.lang]}</p></div>
+  </div>`:`<div class="mt-7 text-sm font-semibold text-slate-500">${L.tap}</div>`}
+  </div>
+  ${S.revealed?`<button onclick="nextStage()" class="mt-5 min-h-14 w-full rounded-2xl bg-cyan-400 px-5 text-base font-black text-slate-950 hover:bg-cyan-300">${L.continue}</button>`:""}
+  </section>`;
+}
+
+function multipleStage(){
+  const L=getLang(),w=currentWord();
+  return `<section class="fade"><div class="mb-3 text-xs font-black uppercase tracking-widest text-cyan-400">${L.multiple} · +50 XP</div>
+  <div class="glass rounded-3xl p-5 sm:p-8"><div class="text-center"><div class="text-xs font-bold uppercase tracking-widest text-slate-500">${L.base}</div><div class="mt-3 text-3xl font-black text-white sm:text-5xl">${esc(w.b)}</div>${S.lang==="pt"?`<div class="mt-2 text-sm text-slate-400">${esc(w.t)} · ${L.equivalent} ${esc(w.e)}</div>`:""}</div>
+  <div class="mt-7 grid gap-3">${S.options.map((opt,i)=>{
+    let cls="border-slate-700 bg-slate-900/80 text-slate-100";
+    if(S.optionDone){const c=opt===w.a||(w.alt&&w.alt.includes(opt));if(c)cls="correct";else if(i===S.selected)cls="wrong";else cls="muted-option border-slate-700 bg-slate-900 text-slate-300"}
+    return `<button onclick="pickOpt(${i})" ${S.optionDone?"disabled":""} class="option min-h-16 rounded-2xl border-2 px-5 text-left text-lg font-black ${cls}"><span class="mr-3 text-sm font-bold text-slate-500">${String.fromCharCode(65+i)}</span>${esc(opt)}</button>`
+  }).join("")}</div>
+  ${S.optionDone?`<div class="mt-6 rounded-2xl border ${S.options[S.selected]===w.a||(w.alt&&w.alt.includes(S.options[S.selected]))?"border-green-800 bg-green-950/30":"border-red-900 bg-red-950/30"} p-4">
+  <div class="font-black ${S.options[S.selected]===w.a||(w.alt&&w.alt.includes(S.options[S.selected]))?"text-green-300":"text-red-300"}">${S.options[S.selected]===w.a||(w.alt&&w.alt.includes(S.options[S.selected]))?L.correct:L.wrong}</div>
+  ${!(S.options[S.selected]===w.a||(w.alt&&w.alt.includes(S.options[S.selected])))?`<p class="mt-2 text-sm text-slate-300">${L.answerWas} <strong class="text-white">${esc(w.a)}</strong></p>`:""}
+  <div class="mt-3 text-sm font-bold text-cyan-300">${L.remember}: ${RULES[ruleFor(S.q)].suf}</div><p class="mt-1 text-sm text-slate-400">${RULES[ruleFor(S.q)][S.lang]}</p></div>
+  <button onclick="nextStage()" class="mt-5 min-h-14 w-full rounded-2xl bg-cyan-400 px-5 text-base font-black text-slate-950 hover:bg-cyan-300">${L.continue}</button>`:""}
+  </div></section>`;
+}
+
+function writingStage(finalMode=false){
+  const L=getLang(),w=currentWord();
+  let feedback="";
+  if(S.writingDone){
+    if(S.writingResult==="correct")feedback=`<div class="mt-5 rounded-2xl border border-green-800 bg-green-950/30 p-4"><div class="font-black text-green-300">${L.correct} +100 XP</div><div class="mt-2 text-sm text-slate-300">${L.correctOption}: <strong class="text-white">${esc(w.a)}</strong></div></div>`;
+    else if(S.writingResult==="accent")feedback=`<div class="mt-5 rounded-2xl border border-cyan-800 bg-cyan-950/30 p-4"><div class="font-black text-cyan-300">${L.correct} +100 XP</div><div class="mt-2 text-sm text-slate-300">${L.accent}</div><div class="mt-2 text-xl font-black text-white">${esc(w.a)}</div></div>`;
+    else feedback=`<div class="mt-5 rounded-2xl border border-red-900 bg-red-950/30 p-4"><div class="font-black text-red-300">${L.wrong}</div><div class="mt-2 text-sm text-slate-300">${L.answerWas} <strong class="text-white">${esc(w.a)}</strong></div></div>`;
+  }
+  return `<section class="fade">${!finalMode?`<div class="mb-3 text-xs font-black uppercase tracking-widest text-cyan-400">${L.written} · +100 XP</div>`:""}
+  <div class="glass rounded-3xl p-5 sm:p-8"><div class="text-center"><div class="text-xs font-bold uppercase tracking-widest text-slate-500">${L.base}</div><div class="mt-3 text-3xl font-black text-white sm:text-5xl">${esc(w.b)}</div>${S.lang==="pt"?`<div class="mt-2 text-sm text-slate-400">${esc(w.t)} · ${L.equivalent} ${esc(w.e)}</div>`:""}</div>
+  <div class="mt-7"><input id="answerInput" type="text" autocomplete="off" spellcheck="false" ${S.writingDone?"disabled":""} placeholder="${esc(L.type)}" class="min-h-16 w-full rounded-2xl border-2 border-slate-700 bg-slate-950 px-5 text-center text-xl font-bold text-white placeholder:text-slate-600">
+  ${!S.writingDone?`<button onclick="check()" class="mt-3 min-h-14 w-full rounded-2xl bg-cyan-400 px-5 text-base font-black text-slate-950 hover:bg-cyan-300">${L.confirm}</button><div class="mt-3 text-center text-xs text-slate-500">${L.inputHint}</div>`:""}</div>${feedback}
+  ${S.writingDone?`<button onclick="next()" class="mt-5 min-h-14 w-full rounded-2xl bg-cyan-400 px-5 text-base font-black text-slate-950 hover:bg-cyan-300">${S.q===49?L.finish:L.continue}</button>`:""}
+  </div></section>`;
+}
+
+function finalMultiple(){
+  const L=getLang(),w=currentWord();
+  return `<section class="fade"><div class="mb-4 rounded-2xl border border-violet-900/50 bg-violet-950/20 p-4"><div class="text-xs font-black uppercase tracking-widest text-violet-300">${L.finalTitle}</div><p class="mt-1 text-sm leading-6 text-slate-300">${L.finalDesc}</p></div>
+  <div class="glass rounded-3xl p-5 sm:p-8"><div class="text-center"><div class="text-xs font-bold uppercase tracking-widest text-slate-500">${L.base}</div><div class="mt-3 text-3xl font-black text-white sm:text-5xl">${esc(w.b)}</div>${S.lang==="pt"?`<div class="mt-2 text-sm text-slate-400">${esc(w.t)} · ${L.equivalent} ${esc(w.e)}</div>`:""}</div>
+  <div class="mt-7 grid gap-3">${S.options.map((opt,i)=>{let cls="border-slate-700 bg-slate-900/80 text-slate-100";if(S.optionDone){const c=opt===w.a||(w.alt&&w.alt.includes(opt));if(c)cls="correct";else if(i===S.selected)cls="wrong";else cls="muted-option border-slate-700 bg-slate-900"}return `<button onclick="pickOpt(${i})" ${S.optionDone?"disabled":""} class="option min-h-16 rounded-2xl border-2 px-5 text-left text-lg font-black ${cls}"><span class="mr-3 text-sm font-bold text-slate-500">${String.fromCharCode(65+i)}</span>${esc(opt)}</button>`}).join("")}</div>
+  ${S.optionDone?`<div class="mt-5 rounded-2xl border ${S.options[S.selected]===w.a||(w.alt&&w.alt.includes(S.options[S.selected]))?"border-green-800 bg-green-950/30":"border-red-900 bg-red-950/30"} p-4"><div class="font-black ${S.options[S.selected]===w.a||(w.alt&&w.alt.includes(S.options[S.selected]))?"text-green-300":"text-red-300"}">${S.options[S.selected]===w.a||(w.alt&&w.alt.includes(S.options[S.selected]))?L.correct:L.wrong}</div><div class="mt-2 text-sm text-slate-300">${L.answerWas} <strong class="text-white">${esc(w.a)}</strong></div></div><button onclick="nextStage()" class="mt-5 min-h-14 w-full rounded-2xl bg-cyan-400 px-5 text-base font-black text-slate-950 hover:bg-cyan-300">${L.continue}</button>`:""}</div></section>`;
+}
+
+function finishScreen(){
+  const L=getLang();
+  return `<section class="fade"><div class="glass rounded-3xl p-6 text-center sm:p-10"><div class="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-cyan-400/10 text-4xl">${S.writtenCorrect===50?"🏆":"🎯"}</div>
+  <h2 class="mt-5 text-3xl font-black text-white sm:text-4xl">${L.finish}</h2><div class="xp-pop mt-6 text-5xl font-black text-cyan-300">${S.xp} <span class="text-xl">${L.xp}</span></div>
+  <div class="mt-6 rounded-2xl border border-slate-700 bg-slate-900/70 p-5"><div class="text-sm text-slate-400">${L.writtenCorrect}</div><div class="mt-1 text-4xl font-black text-white">${S.writtenCorrect}/50</div></div>
+  <div class="mt-6 text-left"><h3 class="text-lg font-black text-white">${L.wrongWords}</h3>${S.errors.length?`<div class="mt-3 space-y-2">${S.errors.map(e=>`<div class="rounded-xl border border-red-900/70 bg-red-950/20 p-3"><div class="font-bold text-white">${esc(e.base)} ${S.lang==="pt"?`<span class="font-normal text-slate-400"> · ${esc(e.translation)}</span>`:""}</div><div class="mt-1 text-sm text-red-300">${L.answerWas} <strong>${esc(e.answer)}</strong></div></div>`).join("")}</div>`:`<div class="mt-3 rounded-xl border border-green-900/70 bg-green-950/20 p-4 text-sm text-green-300">${L.noErrors}</div>`}</div>
+  <div class="mt-6 rounded-2xl border border-cyan-900/50 bg-cyan-950/20 p-4 text-sm leading-6 text-slate-300">${S.writtenCorrect===50?L.congratulations:`${L.goal} ${L.restartMsg}`}</div>
+  <button onclick="init()" class="mt-6 min-h-14 w-full rounded-2xl bg-cyan-400 px-5 text-base font-black text-slate-950 hover:bg-cyan-300">${L.restart}</button></div></section>`;
+}
+
+function render(){
+  const app=document.getElementById("app");
+  let content;
+  if(S.finished)content=finishScreen();
+  else if(S.q<30)content=S.stage===1?studyStage():S.stage===2?multipleStage():writingStage();
+  else content=S.stage===2?finalMultiple():writingStage(true);
+  app.innerHTML=`${header()}<main class="mx-auto max-w-4xl px-4 py-5 pb-10 sm:py-8">${!S.finished?counter():""}${!S.finished?ruleBox():""}${content}</main>`;
+  if(!S.finished&&S.stage===3)setTimeout(()=>document.getElementById("answerInput")?.focus(),20);
+}
+
+document.addEventListener("keydown",e=>{
+  if(e.key!=="Enter")return;
+  const input=document.getElementById("answerInput");
+  if(input&&document.activeElement===input){
+    e.preventDefault();
+    if(!S.writingDone)check();else next();
+    return;
+  }
+  if(S.stage===1&&!S.revealed){e.preventDefault();reveal()}
+  else if(S.stage===1&&S.revealed){e.preventDefault();nextStage()}
+  else if(S.stage===2&&S.optionDone){e.preventDefault();nextStage()}
+});
+
+init();
+</script>
+</body>
+</html>
